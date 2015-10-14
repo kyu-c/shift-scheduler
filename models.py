@@ -69,14 +69,10 @@ def assign_adj_time_slots(time_slot, worker):
   while count < MAX_SHIFT_HOURS and worker.can_work(): # max duration of shift
     pref_before, pref_after = 0, 0
     if slot_before:
-      if slot_before.worker:
-        slot_before = None
-      else:
+      if not slot_before.worker:
         pref_before = worker.get_pref(slot_before.id)
     if slot_after:
-      if slot_after.worker:
-        slot_after = None
-      else:
+      if not slot_after.worker:
         pref_after = worker.get_pref(slot_after.id)
 
     if pref_before or pref_after:
