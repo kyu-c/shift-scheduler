@@ -31,7 +31,7 @@ with open('data.txt', 'r') as f:
 time_slot_list = dict_val_to_list(time_slots)
 
 # Sort time_slot_list by number of avaialbe workers in increasing order
-time_slot_list.sort(key=lambda x: x.number_of_workers)
+time_slot_list.sort(key=lambda x: x.num_available_workers)
 
 # sort worker lists of each time slot
 sort_all_time_slots(time_slots)
@@ -40,13 +40,14 @@ for time_slot in time_slot_list:
   if not time_slot.worker and time_slot.available_workers:
     worker = time_slot.get_worker()
     if worker:
-      if not worker.can_work():
+      if not worker.can_work(time_slot.day):
         while time_slot.available_workers:
           alt_worker = time_slot.get_worker()
-          if alt_worker.can_work:
+          if alt_worker.can_work(time_slot.day):
             worker = alt_worker
             break
       time_slot.assign_worker(worker)
+      # worker.update_work_days(time_slot.day)
       assign_adj_time_slots(time_slot, worker)
 
 
