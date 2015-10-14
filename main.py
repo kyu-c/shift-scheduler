@@ -8,12 +8,12 @@ with open('data.txt', 'r') as f:
   data = f.readline().split()
   prev_id = None
   for id in data[1:]:
-    str_id = str(id)
-    time_slots[str_id] = TimeSlot(str_id)
-    if (prev_id):
-      time_slots[prev_id].slot_after = time_slots[str_id]
-      time_slots[str_id].slot_before = time_slots[prev_id]
-    prev_id = str_id
+    current_id = str(id)
+    time_slots[current_id] = TimeSlot(current_id)
+    if (prev_id and time_slots[prev_id].day == time_slots[current_id].day):
+      time_slots[prev_id].slot_after = time_slots[current_id]
+      time_slots[current_id].slot_before = time_slots[prev_id]
+    prev_id = current_id
 
   f.readline()
 
@@ -52,5 +52,3 @@ for time_slot in time_slot_list:
 
 
 print_result(time_slot_list, workers)
-
-

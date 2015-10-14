@@ -13,7 +13,7 @@ class TimeSlot:
     self.day = id[:3]
 
   def __repr__(self):
-    return "TimeSlot(" + self.id + "," + str(self.number_of_workers) +")"
+    return "TimeSlot(" + self.id + "," + str(self.num_available_workers) +")"
 
 
   def add_worker(self, worker):
@@ -95,7 +95,7 @@ def assign_adj_time_slots(time_slot, worker):
       return
 
 def print_result(time_slot_list, workers):
-  print "RESULT"
+  print "====RESULT===="
   time_slot_list.sort(key=lambda x: x.id)
   for time_slot in time_slot_list:
     print  time_slot.id + " " + str(time_slot.worker)
