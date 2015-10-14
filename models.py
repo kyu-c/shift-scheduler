@@ -59,6 +59,10 @@ class Worker:
     return self.hours < MAX_HOURS and not (day in self.work_days)
 
 ### other functions
+def update_dict(dict, key, val):
+  if not key in dict:
+    dict[key] = val
+
 def dict_val_to_list(dictionary):
   result = []
   for key in dictionary:

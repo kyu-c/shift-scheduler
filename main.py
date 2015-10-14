@@ -1,32 +1,34 @@
 from models import *
+import csv
 
 workers = {}
 time_slots = {}
 time_slot_list = []
 
-with open('data.txt', 'r') as f:
-  data = f.readline().split()
-  prev_id = None
-  for id in data[1:]:
-    current_id = str(id)
-    time_slots[current_id] = TimeSlot(current_id)
+csv_file = open('data.csv')
+csv_reader = csv.reader(csv_file, delimiter=',', skipinitialspace=True)
+
+headers = next(csv_reader, None)
+
+for name in headers[1:]:
+  workers[name] = Worker(name)
+
+prev_id = None
+for row in csv_reader:
+    current_id = row[0]
+    update_dict(time_slots, current_id, TimeSlot(current_id))
     if (prev_id and time_slots[prev_id].day == time_slots[current_id].day):
       time_slots[prev_id].slot_after = time_slots[current_id]
       time_slots[current_id].slot_before = time_slots[prev_id]
+
+    for i in range(1, len(row)):
+      pref = int(row[i])
+      name = headers[i]
+      workers[name].update_pref(current_id, pref)
+      if pref:
+        time_slots[current_id].add_worker(workers[name])
+
     prev_id = current_id
-
-  f.readline()
-
-  for line in f:
-    data = line.split() #time name pref
-    time, name, pref = data[0], data[1], int(data[2])
-
-    if (not name in workers):
-      workers[name] = Worker(name)
-    workers[name].update_pref(time, pref)
-    if not pref == 0:
-      time_slots[time].add_worker(workers[name])
-
 
 time_slot_list = dict_val_to_list(time_slots)
 
@@ -47,7 +49,7 @@ for time_slot in time_slot_list:
             worker = alt_worker
             break
       time_slot.assign_worker(worker)
-      # worker.update_work_days(time_slot.day)
+      worker.update_work_days(time_slot.day)
       assign_adj_time_slots(time_slot, worker)
 
 
