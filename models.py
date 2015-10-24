@@ -1,6 +1,9 @@
 # Unit 30 mins
-MAX_HOURS = 20 # approx (num of slots / num of people)
-MAX_SHIFT_HOURS = 7
+MAX_SLOTS = 20 # approx (num of slots / num of people)
+MAX_SHIFT_SLOTS = 8
+
+MAX_HOURS = MAX_SLOTS / 2
+MAX_SHIFT_HOURS = MAX_SHIFT_SLOTS /2
 
 class TimeSlot:
   def __init__(self, id):
@@ -15,7 +18,6 @@ class TimeSlot:
   def __repr__(self):
     return "TimeSlot(" + self.id + "," + str(self.num_available_workers) +")"
 
-
   def add_worker(self, worker):
     self.available_workers.append(worker)
     self.num_available_workers += 1
@@ -23,7 +25,18 @@ class TimeSlot:
   # Should be used after available_workers list is sorted
   def get_worker(self):
     if self.available_workers:
-      return self.available_workers.pop(0)
+      highest_pref = self.available_workers[0].preference[self.id]
+      worker_hours = self.available_workers[0].hours
+      position = 0
+      for i in range(self.num_available_workers):
+        if highest_pref != self.available_workers[i].preference[self.id]:
+          break
+        elif worker_hours > self.available_workers[i].hours:
+          worker_hours = self.available_workers[i].hours
+          position = i
+
+      self.num_available_workers -= 1
+      return self.available_workers.pop(position)
 
   def assign_worker(self, worker):
     self.worker = worker
@@ -42,9 +55,7 @@ class Worker:
     self.work_days = []
 
   def __repr__(self):
-    # return "Worker(" + self.id + "," + str(self.hours) + ")"
     return self.id
-
 
   def update_pref(self, time_slot_id, pref):
     self.preference[time_slot_id] = pref
@@ -87,7 +98,7 @@ def assign_adj_time_slots(time_slot, worker):
       if not slot_after.worker:
         pref_after = worker.get_pref(slot_after.id)
 
-    if pref_before or pref_after:
+    if pref_before > 1 or pref_after > 1:
       if pref_before >= pref_after:
         slot_before.assign_worker(worker)
         slot_before = slot_before.slot_before
