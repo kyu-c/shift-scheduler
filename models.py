@@ -1,9 +1,8 @@
+MAX_HOURS = 10
+MAX_SHIFT_HOURS = 4
 # Unit 30 mins
-MAX_SLOTS = 20 # approx (num of slots / num of people)
-MAX_SHIFT_SLOTS = 8
-
-MAX_HOURS = MAX_SLOTS / 2
-MAX_SHIFT_HOURS = MAX_SHIFT_SLOTS /2
+MAX_SLOTS =  MAX_HOURS * 2
+MAX_SHIFT_SLOTS = MAX_SHIFT_HOURS * 2
 
 class TimeSlot:
   def __init__(self, id):
@@ -26,13 +25,13 @@ class TimeSlot:
   def get_worker(self):
     if self.available_workers:
       highest_pref = self.available_workers[0].preference[self.id]
-      worker_hours = self.available_workers[0].hours
+      worker_slots = self.available_workers[0].slots
       position = 0
       for i in range(self.num_available_workers):
         if highest_pref != self.available_workers[i].preference[self.id]:
           break
-        elif worker_hours > self.available_workers[i].hours:
-          worker_hours = self.available_workers[i].hours
+        elif worker_slots > self.available_workers[i].slots:
+          worker_slots = self.available_workers[i].slots
           position = i
 
       self.num_available_workers -= 1
@@ -40,7 +39,7 @@ class TimeSlot:
 
   def assign_worker(self, worker):
     self.worker = worker
-    worker.hours += 1
+    worker.slots += 1
 
   # Sort available workers in terms of decreasing order
   def sort(self):
@@ -50,7 +49,7 @@ class TimeSlot:
 class Worker:
   def __init__(self,id):
     self.id = id
-    self.hours = 0
+    self.slots = 0
     self.preference = {}
     self.work_days = []
 
@@ -67,7 +66,7 @@ class Worker:
     self.work_days.append(day)
 
   def can_work(self, day):
-    return self.hours < MAX_HOURS and not (day in self.work_days)
+    return self.slots < MAX_SLOTS and not (day in self.work_days)
 
 ### other functions
 def update_dict(dict, key, val):
@@ -89,7 +88,7 @@ def assign_adj_time_slots(time_slot, worker):
   count = 1
   slot_before = time_slot.slot_before
   slot_after = time_slot.slot_after
-  while count < MAX_SHIFT_HOURS and worker.can_work(time_slot.day): # max duration of shift
+  while count < MAX_SHIFT_SLOTS and worker.can_work(time_slot.day): # max duration of shift
     pref_before, pref_after = 0, 0
     if slot_before:
       if not slot_before.worker:
@@ -118,4 +117,4 @@ def print_result(time_slot_list, workers):
   print "====Summary===="
   for key in workers:
     worker = workers[key]
-    print  worker.id + " - Hours: " + str(worker.hours/2.0)
+    print  worker.id + " - Hours: " + str(worker.slots/2.0)

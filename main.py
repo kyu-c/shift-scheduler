@@ -5,7 +5,7 @@ workers = {}
 time_slots = {}
 time_slot_list = []
 
-csv_file = open('data.csv')
+csv_file = open('real_data.csv')
 csv_reader = csv.reader(csv_file, delimiter=',', skipinitialspace=True)
 
 headers = next(csv_reader, None)
@@ -32,7 +32,7 @@ for row in csv_reader:
 
 time_slot_list = dict_val_to_list(time_slots)
 
-# Sort time_slot_list by number of avaialbe workers in increasing order
+# Sort time_slot_list by number of available workers in increasing order
 time_slot_list.sort(key=lambda x: x.num_available_workers)
 
 # sort worker lists of each time slot
