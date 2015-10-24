@@ -1,5 +1,5 @@
-MAX_HOURS = 10
-MAX_SHIFT_HOURS = 4
+MAX_HOURS = 9
+MAX_SHIFT_HOURS = 3.5
 # Unit 30 mins
 MAX_SLOTS =  MAX_HOURS * 2
 MAX_SHIFT_SLOTS = MAX_SHIFT_HOURS * 2
@@ -97,7 +97,7 @@ def assign_adj_time_slots(time_slot, worker):
       if not slot_after.worker:
         pref_after = worker.get_pref(slot_after.id)
 
-    if pref_before > 1 or pref_after > 1:
+    if max(pref_before, pref_after) > 1:
       if pref_before >= pref_after:
         slot_before.assign_worker(worker)
         slot_before = slot_before.slot_before

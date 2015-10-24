@@ -33,7 +33,14 @@ for row in csv_reader:
 time_slot_list = dict_val_to_list(time_slots)
 
 # Sort time_slot_list by number of available workers in increasing order
-time_slot_list.sort(key=lambda x: x.num_available_workers)
+# time_slot_list.sort(key=lambda x: x.num_available_workers)
+
+# Sort by time (id)
+time_slot_list.sort(key=lambda x: x.id)
+# print time_slot_list
+# print workers["Ian"].preference["FRI-08:30-09:00"]
+# print workers["Ian"].preference["FRI-09:00-09:30"]
+
 
 # sort worker lists of each time slot
 sort_all_time_slots(time_slots)
@@ -49,8 +56,8 @@ for time_slot in time_slot_list:
             worker = alt_worker
             break
       time_slot.assign_worker(worker)
-      worker.update_work_days(time_slot.day)
       assign_adj_time_slots(time_slot, worker)
+      worker.update_work_days(time_slot.day)
 
 
 print_result(time_slot_list, workers)
