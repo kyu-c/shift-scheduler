@@ -1,4 +1,5 @@
 MAX_HOURS = 9
+MIN_SHIFT_HOURS = 1.5
 MAX_SHIFT_HOURS = 3.5
 # Unit 30 mins
 MAX_SLOTS =  MAX_HOURS * 2
@@ -51,7 +52,7 @@ class Worker:
     self.id = id
     self.slots = 0
     self.preference = {}
-    self.work_days = []
+    self.work_days = set.()
 
   def __repr__(self):
     return self.id
@@ -63,7 +64,7 @@ class Worker:
     return self.preference[time_slot_id]
 
   def update_work_days(self, day):
-    self.work_days.append(day)
+    self.work_days.add(day)
 
   def can_work(self, day):
     return self.slots < MAX_SLOTS and not (day in self.work_days)
