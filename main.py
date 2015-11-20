@@ -1,11 +1,11 @@
 from models import *
-import csv
+import csv, random
 
 workers = {}
 time_slots = {}
 time_slot_list = []
 
-csv_file = open('real_data.csv')
+csv_file = open('sample_data_large.csv')
 csv_reader = csv.reader(csv_file, delimiter=',', skipinitialspace=True)
 
 headers = next(csv_reader, None)
@@ -19,7 +19,6 @@ for row in csv_reader:
     update_dict(time_slots, current_id, TimeSlot(current_id))
     if (prev_id and time_slots[prev_id].day == time_slots[current_id].day):
       time_slots[prev_id].slot_after = time_slots[current_id]
-      time_slots[current_id].slot_before = time_slots[prev_id]
 
     for i in range(1, len(row)):
       pref = int(row[i])
@@ -31,33 +30,21 @@ for row in csv_reader:
     prev_id = current_id
 
 time_slot_list = dict_val_to_list(time_slots)
-
-# Sort time_slot_list by number of available workers in increasing order
-# time_slot_list.sort(key=lambda x: x.num_available_workers)
-
-# Sort by time (id)
 time_slot_list.sort(key=lambda x: x.id)
-# print time_slot_list
-# print workers["Ian"].preference["FRI-08:30-09:00"]
-# print workers["Ian"].preference["FRI-09:00-09:30"]
-
-
-# sort worker lists of each time slot
-sort_all_time_slots(time_slots)
 
 for time_slot in time_slot_list:
   if not time_slot.worker and time_slot.available_workers:
-    worker = time_slot.get_worker()
-    if worker:
-      if not worker.can_work(time_slot.day):
-        while time_slot.available_workers:
-          alt_worker = time_slot.get_worker()
-          if alt_worker.can_work(time_slot.day):
-            worker = alt_worker
-            break
-      time_slot.assign_worker(worker)
-      assign_adj_time_slots(time_slot, worker)
-      worker.update_work_days(time_slot.day)
+    while time_slot.available_workers:
+      worker = time_slot.get_worker()
+      if worker.can_work(time_slot):
+        shift = get_shift(time_slot, worker)
+        if len(shift) >= MIN_SHIFT_SLOTS:
+          break
 
+    if worker:
+      duration = len(shift)
+      if duration > MAX_SHIFT_SLOTS - 3:
+        duration = random.randrange(5, duration + 1)
+      assign_shift(shift[:duration], worker)
 
 print_result(time_slot_list, workers)
