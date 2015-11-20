@@ -1,50 +1,52 @@
-MAX_HOURS = 9
-MIN_SHIFT_HOURS = 1.5
-MAX_SHIFT_HOURS = 3.5
+MAX_HOURS = 8.5 # targeted hours per worker
+MIN_SHIFT_HOURS = 1 # minimum hours of a shift
+MAX_SHIFT_HOURS = 4 # maximum hours of a shift
+
 # Unit 30 mins
 MAX_SLOTS =  MAX_HOURS * 2
+MIN_SHIFT_SLOTS = MIN_SHIFT_HOURS * 2
 MAX_SHIFT_SLOTS = MAX_SHIFT_HOURS * 2
 
 class TimeSlot:
   def __init__(self, id):
     self.id = id
     self.available_workers = []
-    self.num_available_workers = 0
     self.worker = None
-    self.slot_before = None
     self.slot_after = None
     self.day = id[:3]
+    self.sorted = False
 
   def __repr__(self):
-    return "TimeSlot(" + self.id + "," + str(self.num_available_workers) +")"
+    return "TimeSlot(" + self.id +")"
 
   def add_worker(self, worker):
     self.available_workers.append(worker)
-    self.num_available_workers += 1
 
   # Should be used after available_workers list is sorted
   def get_worker(self):
+    if self.sorted == False:
+      self.sort()
     if self.available_workers:
       highest_pref = self.available_workers[0].preference[self.id]
       worker_slots = self.available_workers[0].slots
-      position = 0
-      for i in range(self.num_available_workers):
+      worker_index = 0
+      for i in range(len(self.available_workers)):
         if highest_pref != self.available_workers[i].preference[self.id]:
           break
         elif worker_slots > self.available_workers[i].slots:
           worker_slots = self.available_workers[i].slots
-          position = i
+          worker_index = i
 
-      self.num_available_workers -= 1
-      return self.available_workers.pop(position)
+      return self.available_workers.pop(worker_index)
 
   def assign_worker(self, worker):
     self.worker = worker
     worker.slots += 1
 
-  # Sort available workers in terms of decreasing order
+  # Sort available workers by preference (high preference to low)
   def sort(self):
     self.available_workers.sort(key=lambda x: x.preference[self.id], reverse=True)
+    self.sorted = True
 
 
 class Worker:
@@ -52,7 +54,7 @@ class Worker:
     self.id = id
     self.slots = 0
     self.preference = {}
-    self.work_days = set.()
+    self.work_days = set()
 
   def __repr__(self):
     return self.id
@@ -66,8 +68,8 @@ class Worker:
   def update_work_days(self, day):
     self.work_days.add(day)
 
-  def can_work(self, day):
-    return self.slots < MAX_SLOTS and not (day in self.work_days)
+  def can_work(self, time_slot):
+    return self.slots < MAX_SLOTS and not (time_slot.day in self.work_days)
 
 ### other functions
 def update_dict(dict, key, val):
@@ -80,34 +82,25 @@ def dict_val_to_list(dictionary):
     result.append(dictionary[key])
   return result
 
-# timeslots is a dictionary that has id as key and timeslot and val
-def sort_all_time_slots(time_slots):
-  for key in time_slots:
-    time_slots[key].sort()
-
-def assign_adj_time_slots(time_slot, worker):
-  count = 1
-  slot_before = time_slot.slot_before
-  slot_after = time_slot.slot_after
-  while count < MAX_SHIFT_SLOTS and worker.can_work(time_slot.day): # max duration of shift
-    pref_before, pref_after = 0, 0
-    if slot_before:
-      if not slot_before.worker:
-        pref_before = worker.get_pref(slot_before.id)
-    if slot_after:
-      if not slot_after.worker:
-        pref_after = worker.get_pref(slot_after.id)
-
-    if max(pref_before, pref_after) > 1:
-      if pref_before >= pref_after:
-        slot_before.assign_worker(worker)
-        slot_before = slot_before.slot_before
-      else:
-        slot_after.assign_worker(worker)
-        slot_after = slot_after.slot_after
-      count += 1
+def get_shift(start_time_slot, worker):
+  shift = [start_time_slot]
+  slot_after = start_time_slot.slot_after
+  duration = 1
+  while (duration < MAX_SHIFT_SLOTS and slot_after
+        and duration + worker.slots <= MAX_HOURS *2):
+    pref_after = worker.get_pref(slot_after.id)
+    if pref_after > 0:
+      shift.append(slot_after)
+      slot_after = slot_after.slot_after
+      duration += 1
     else:
-      return
+      break
+  return shift
+
+def assign_shift(shift, worker):
+  worker.update_work_days(shift[0].day)
+  for time_slot in shift:
+    time_slot.assign_worker(worker)
 
 def print_result(time_slot_list, workers):
   print "====RESULT===="
