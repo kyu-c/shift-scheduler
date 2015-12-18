@@ -32,7 +32,9 @@ def schedule_shifts(filename):
       prev_id = current_id
 
   time_slot_list = dict_val_to_list(time_slots)
-  time_slot_list.sort(key=lambda x: x.id)
+
+  days = {"MON": 1, "TUE": 2, "WED": 3, "THU": 4, "FRI": 5, "SUN": 6}
+  time_slot_list.sort(key=lambda x: (days[x.id[:3]], x.id[4:]))
 
   for time_slot in time_slot_list:
     if not time_slot.worker and time_slot.available_workers:
@@ -49,12 +51,24 @@ def schedule_shifts(filename):
           duration = random.randrange(5, duration + 1)
         assign_shift(shift[:duration], worker)
 
-  return (copy.copy(time_slot_list), copy.copy(workers))
+  return ((time_slot_list), (workers))
 
+def repeat_scheduling(filename):
+  schedules = []
+  for i in range(100):
+    schedules.append(schedule_shifts(filename))
 
-schedules = []
-for i in range(10):
-  schedules.append(schedule_shifts('sample_data_large.csv'))
+  best_schedule = None
+  best_uncovered = best_slots_diff = float("inf")
 
-for ts_workers in schedules:
-  print_result(ts_workers[0], ts_workers[1])
+  for schedule in schedules:
+    current_uncovered = get_num_uncovered_shifts(schedule[0])
+    current_slots_diff = get_min_max_worker_slots_diff(schedule[1])
+    if current_uncovered <= best_uncovered and current_slots_diff <= best_slots_diff:
+      best_schedule = schedule
+      best_uncovered = current_uncovered
+      best_slots_diff = current_slots_diff
+
+  print_result(best_schedule[0], best_schedule[1])
+
+repeat_scheduling('sample_data_large.csv')
