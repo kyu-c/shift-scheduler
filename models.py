@@ -102,13 +102,26 @@ def assign_shift(shift, worker):
   for time_slot in shift:
     time_slot.assign_worker(worker)
 
-def print_result(time_slot_list, workers):
+def get_min_max_worker_slots_diff(workers):
+  slots = [workers[key].slots for key in workers]
+  min_slots = min(slots)
+  max_slots = max(slots)
+  return max_slots - min_slots
+
+def get_num_uncovered_shifts(time_slots):
+  num_uncovered = 0
+  for time_slot in time_slots:
+    if time_slot.worker is None:
+      num_uncovered += 1
+  return num_uncovered
+
+def print_result(time_slots, workers):
   print "====RESULT===="
-  time_slot_list.sort(key=lambda x: x.id)
-  for time_slot in time_slot_list:
+  for time_slot in time_slots:
     print  time_slot.id + " " + str(time_slot.worker)
 
   print "====Summary===="
-  for key in workers:
-    worker = workers[key]
+  worker_list = [workers[key] for key in workers]
+  worker_list.sort(key=lambda x: x.id)
+  for worker in worker_list:
     print  worker.id + " - Hours: " + str(worker.slots/2.0)
