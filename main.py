@@ -31,9 +31,8 @@ def schedule_shifts(filename):
 
       prev_id = current_id
 
-  time_slot_list = dict_val_to_list(time_slots)
-
   days = {"MON": 1, "TUE": 2, "WED": 3, "THU": 4, "FRI": 5, "SUN": 6}
+  time_slot_list = dict_val_to_list(time_slots)
   time_slot_list.sort(key=lambda x: (days[x.id[:3]], x.id[4:]))
 
   for time_slot in time_slot_list:
