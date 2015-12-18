@@ -1,5 +1,5 @@
 from models import *
-import csv, random, copy
+import csv, random, copy, sys
 
 
 def schedule_shifts(filename):
@@ -52,9 +52,9 @@ def schedule_shifts(filename):
 
   return ((time_slot_list), (workers))
 
-def repeat_scheduling(filename):
+def repeat_scheduling(filename, iterations):
   schedules = []
-  for i in range(100):
+  for i in range(iterations):
     schedules.append(schedule_shifts(filename))
 
   best_schedule = None
@@ -70,4 +70,11 @@ def repeat_scheduling(filename):
 
   print_result(best_schedule[0], best_schedule[1])
 
-repeat_scheduling('sample_data_large.csv')
+
+if len(sys.argv) != 3:
+  print "Usage: " + sys.argv[0] + " <worker_prefs.csv> <iterations>"
+  exit(1)
+else:
+   repeat_scheduling(sys.argv[1], int(sys.argv[2]))
+
+
