@@ -1,4 +1,5 @@
-MAX_HOURS = 8.5 # targeted hours per worker
+import random, sys
+MAX_HOURS = 8.25 # targeted hours per worker
 MIN_SHIFT_HOURS = 1 # minimum hours of a shift
 MAX_SHIFT_HOURS = 4 # maximum hours of a shift
 
@@ -31,9 +32,9 @@ class TimeSlot:
       worker_slots = self.available_workers[0].slots
       worker_index = 0
       for i in range(len(self.available_workers)):
-        if highest_pref != self.available_workers[i].preference[self.id]:
+        if highest_pref - random.randint(0,1) < self.available_workers[i].preference[self.id]:
           break
-        elif worker_slots > self.available_workers[i].slots:
+        elif worker_slots - random.randint(0,2) > self.available_workers[i].slots:
           worker_slots = self.available_workers[i].slots
           worker_index = i
 
@@ -115,13 +116,17 @@ def get_num_uncovered_shifts(time_slots):
       num_uncovered += 1
   return num_uncovered
 
-def print_result(time_slots, workers):
-  print "====RESULT===="
-  for time_slot in time_slots:
-    print  time_slot.id + " " + str(time_slot.worker)
+def print_result(time_slots, workers, output):
+  hours = {}
+  with open(output, 'w') as f:
+    for time_slot in time_slots:
+      worker = str(time_slot.worker)
+      f.write(time_slot.id + " " + worker + "\n")
+      if worker in hours:
+        hours[worker] += 0.5
+      else:
+        hours[worker] = 0.5
 
   print "====Summary===="
-  worker_list = [workers[key] for key in workers]
-  worker_list.sort(key=lambda x: x.id)
-  for worker in worker_list:
-    print  worker.id + " - Hours: " + str(worker.slots/2.0)
+  for worker in hours:
+    print worker + " - Hours: " + str(hours[worker])

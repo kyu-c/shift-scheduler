@@ -1,12 +1,18 @@
+import csv, sys, argparse, random, copy
 from models import *
-import csv, random, copy, sys
 
+def get_arguments():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("input", help="input.csv")
+  parser.add_argument("output", help="output.csv")
+  parser.add_argument("-i", "--iterations", type=int, default=1000,
+                      help="Number of iterations")
+  return parser.parse_args()
 
 def schedule_shifts(filename):
   workers = {}
   time_slots = {}
   time_slot_list = []
-
   csv_file = open(filename)
   csv_reader = csv.reader(csv_file, delimiter=',', skipinitialspace=True)
 
@@ -31,7 +37,10 @@ def schedule_shifts(filename):
 
       prev_id = current_id
 
-  days = {"MON": 1, "TUE": 2, "WED": 3, "THU": 4, "FRI": 5, "SUN": 6}
+  priority = range(1,7)
+  days = ["MON", "TUE", "WED", "THU", "FRI", "SUN"]
+  random.shuffle(days)
+  days = dict(zip(days, priority))
   time_slot_list = dict_val_to_list(time_slots)
   time_slot_list.sort(key=lambda x: (days[x.id[:3]], x.id[4:]))
 
@@ -50,31 +59,27 @@ def schedule_shifts(filename):
           duration = random.randrange(5, duration + 1)
         assign_shift(shift[:duration], worker)
 
+  days = {"MON": 1, "TUE": 2, "WED": 3, "THU": 4, "FRI": 5, "SUN": 6}
+  time_slot_list.sort(key=lambda x: (days[x.id[:3]], x.id[4:]))
+
   return ((time_slot_list), (workers))
 
-def repeat_scheduling(filename, iterations):
-  schedules = []
-  for i in range(iterations):
-    schedules.append(schedule_shifts(filename))
+def repeat_scheduling(input, output, iterations):
+  best_schedule = schedule_shifts(input)
+  best_uncovered = get_num_uncovered_shifts(best_schedule[0])
+  best_slots_diff = get_min_max_worker_slots_diff(best_schedule[1])
 
-  best_schedule = None
-  best_uncovered = best_slots_diff = float("inf")
-
-  for schedule in schedules:
-    current_uncovered = get_num_uncovered_shifts(schedule[0])
-    current_slots_diff = get_min_max_worker_slots_diff(schedule[1])
+  for i in xrange(iterations):
+    current_schedule = schedule_shifts(input)
+    current_uncovered = get_num_uncovered_shifts(current_schedule[0])
+    current_slots_diff = get_min_max_worker_slots_diff(current_schedule[1])
     if current_uncovered <= best_uncovered and current_slots_diff <= best_slots_diff:
-      best_schedule = schedule
+      best_schedule = current_schedule
       best_uncovered = current_uncovered
       best_slots_diff = current_slots_diff
 
-  print_result(best_schedule[0], best_schedule[1])
+  print_result(best_schedule[0], best_schedule[1], output)
 
-
-if len(sys.argv) != 3:
-  print "Usage: " + sys.argv[0] + " <worker_prefs.csv> <iterations>"
-  exit(1)
-else:
-   repeat_scheduling(sys.argv[1], int(sys.argv[2]))
-
-
+if __name__ == '__main__':
+  args = get_arguments()
+  repeat_scheduling(args.input, args.output, int(args.iter))
