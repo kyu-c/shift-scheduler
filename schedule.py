@@ -1,5 +1,6 @@
 import csv, sys, argparse, random, copy
 from models import *
+from util import *
 
 def get_arguments():
   parser = argparse.ArgumentParser()
@@ -82,4 +83,4 @@ def repeat_scheduling(input, output, iterations):
 
 if __name__ == '__main__':
   args = get_arguments()
-  repeat_scheduling(args.input, args.output, int(args.iter))
+  repeat_scheduling(args.input, args.output, int(args.iterations))

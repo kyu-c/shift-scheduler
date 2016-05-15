@@ -51,7 +51,7 @@ class TimeSlot:
 
 
 class Worker:
-  def __init__(self,id):
+  def __init__(self, id):
     self.id = id
     self.slots = 0
     self.preference = {}
@@ -73,16 +73,6 @@ class Worker:
     return self.slots < MAX_SLOTS and not (time_slot.day in self.work_days)
 
 ### other functions
-def update_dict(dict, key, val):
-  if not key in dict:
-    dict[key] = val
-
-def dict_val_to_list(dictionary):
-  result = []
-  for key in dictionary:
-    result.append(dictionary[key])
-  return result
-
 def get_shift(start_time_slot, worker):
   shift = [start_time_slot]
   slot_after = start_time_slot.slot_after
