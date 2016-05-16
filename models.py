@@ -1,4 +1,5 @@
 import random, sys
+from util import write_csv_dicts
 MAX_HOURS = 8.25 # targeted hours per worker
 MIN_SHIFT_HOURS = 1 # minimum hours of a shift
 MAX_SHIFT_HOURS = 4 # maximum hours of a shift
@@ -9,12 +10,14 @@ MIN_SHIFT_SLOTS = MIN_SHIFT_HOURS * 2
 MAX_SHIFT_SLOTS = MAX_SHIFT_HOURS * 2
 
 class TimeSlot:
+  # id format: "MON-13:00-13:30"
   def __init__(self, id):
     self.id = id
     self.available_workers = []
     self.worker = None
     self.slot_after = None
     self.day = id[:3]
+    self.time = id[4:]
     self.sorted = False
 
   def __repr__(self):
@@ -106,17 +109,35 @@ def get_num_uncovered_shifts(time_slots):
       num_uncovered += 1
   return num_uncovered
 
-def print_result(time_slots, workers, output):
-  hours = {}
-  with open(output, 'w') as f:
-    for time_slot in time_slots:
-      worker = str(time_slot.worker)
-      f.write(time_slot.id + " " + worker + "\n")
-      if worker in hours:
-        hours[worker] += 0.5
-      else:
-        hours[worker] = 0.5
+def get_all_times(time_slots):
+  times = set()
+  for time_slot in time_slots:
+    times.add(time_slot.time)
+  return times
 
+def get_time_dict(times):
+  time_dict = dict()
+  for time in times:
+    keys = ["time", "MON", "TUE", "WED", "THU", "FRI", "SUN"]
+    vals = [time, None, None, None, None, None, None]
+    time_dict[time] = dict(zip(keys, vals))
+  return time_dict
+
+def update_time_dict(time_dict, time_slots):
+  for time_slot in time_slots:
+    time_dict[time_slot.time][time_slot.day] = str(time_slot.worker)
+
+def write_result(time_slots, output):
+  times = get_all_times(time_slots)
+  time_dict = get_time_dict(times)
+  update_time_dict(time_dict, time_slots)
+  rows = [time_dict[time] for time in time_dict]
+  rows.sort(key=lambda row: row["time"])
+  headers = ["time", "MON", "TUE", "WED", "THU", "FRI", "SUN"]
+  write_csv_dicts(output, headers, rows)
+
+def print_summary(workers):
   print "====Summary===="
-  for worker in hours:
-    print worker + " - Hours: " + str(hours[worker])
+  print "worker, hours"
+  for name in workers:
+    print name, workers[name].slots*0.5
