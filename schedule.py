@@ -13,33 +13,11 @@ def get_arguments():
 def schedule_shifts(headers, rows):
   workers = {}
   time_slots = {}
-  time_slot_list = []
-
   for name in headers[1:]:
     workers[name] = Worker(name)
 
-  prev_id = None
-  for row in rows:
-    current_id = row["time"]
-    update_dict(time_slots, current_id, TimeSlot(current_id))
-    if (prev_id and time_slots[prev_id].day == time_slots[current_id].day):
-      time_slots[prev_id].slot_after = time_slots[current_id]
-
-    for name in workers:
-      pref = int(row[name])
-      worker = workers[name]
-      worker.update_pref(current_id, pref)
-      if pref > 0:
-        time_slots[current_id].add_worker(worker)
-
-    prev_id = current_id
-
-  priority = range(1,7)
-  days = ["MON", "TUE", "WED", "THU", "FRI", "SUN"]
-  random.shuffle(days)
-  days = dict(zip(days, priority))
-  time_slot_list = dict_val_to_list(time_slots)
-  time_slot_list.sort(key=lambda ts: (days[ts.day], ts.time))
+  update_time_slots_and_workers(rows, time_slots, workers)
+  time_slot_list = get_shuffled_time_slots(time_slots)
 
   for time_slot in time_slot_list:
     if not time_slot.worker and time_slot.available_workers:
@@ -61,6 +39,31 @@ def schedule_shifts(headers, rows):
 
   res = {"time_slots": time_slot_list, "workers": workers}
   return res
+
+def update_time_slots_and_workers(rwos, time_slots, workers):
+  prev_id = None
+  for row in rows:
+    current_id = row["time"]
+    update_dict(time_slots, current_id, TimeSlot(current_id))
+    if (prev_id and time_slots[prev_id].day == time_slots[current_id].day):
+      time_slots[prev_id].slot_after = time_slots[current_id]
+
+    for name in workers:
+      pref = int(row[name])
+      worker = workers[name]
+      worker.update_pref(current_id, pref)
+      if pref > 0:
+        time_slots[current_id].add_worker(worker)
+    prev_id = current_id
+
+def get_shuffled_time_slots(time_slots):
+  priority = range(1,7)
+  days = ["MON", "TUE", "WED", "THU", "FRI", "SUN"]
+  random.shuffle(days)
+  day_to_priority = dict(zip(days, priority))
+  time_slot_list = dict_val_to_list(time_slots)
+  time_slot_list.sort(key=lambda ts: (day_to_priority[ts.day], ts.time))
+  return time_slot_list
 
 def repeat_scheduling(headers, rows, iterations):
   best_schedule = schedule_shifts(headers, rows)

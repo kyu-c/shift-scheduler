@@ -119,7 +119,7 @@ def get_time_dict(times):
   time_dict = dict()
   for time in times:
     keys = ["time", "MON", "TUE", "WED", "THU", "FRI", "SUN"]
-    vals = [time, None, None, None, None, None, None]
+    vals = [time] + [None] * 6
     time_dict[time] = dict(zip(keys, vals))
   return time_dict
 
