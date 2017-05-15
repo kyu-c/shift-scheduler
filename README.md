@@ -1,6 +1,6 @@
 # Shift-Scheduler
 ## Synopsis
-Shift-Scheduler is an employee shift scheduling program specifically designed for the Instructional Technology Center (ITC) of Haverford College. Given time slots that need to be covered, Shift-Scheduler generates a schedule based on workers' preferences.
+Shift-Scheduler is an employee shift scheduling program specifically designed for the Instructional Technology Center (ITC) of Haverford College. Given time slots that need to be covered, Shift-Scheduler generates a schedule based on workers' preferences.  Shift-Scheduler was my first side project that I worked on after taking an introductory Computer Science course. The scheduler was used to schedule student workers' shifts from Fall 2015 to Spring 2017. Since I have graduated from Haverford College, the project is no longer maintained, but if any of ITC employees is interested in maintaining the project, I would be happy to provide any help needed.
 
 ## Implementation
 Shift-Scheduler uses a randomized greedy algorithm with heuristic in combination with iterative method. It attempts to assign a shift to the worker who prefers the shift the most while balancing the number of hours among workers and ensuring all time slots to be covered.
